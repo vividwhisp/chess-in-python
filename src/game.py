@@ -16,12 +16,23 @@ class Game:
                 rect = (col * SQUARE_SIZE,row * SQUARE_SIZE,SQUARE_SIZE,SQUARE_SIZE)
 
                 pygame.draw.rect(surface,color,rect)
-    def show_pieces(self,surface):
+    def show_pieces(self, surface):
         for row in range(ROWS):
-            for col in range(COLS):
-                #Piece ?
-                if self.board[row][col].has_piece():
-                    piece = self.board[row][col].has_piece()
+         for col in range(COLS):
+            square = self.board.squares[row][col]
+
+            if square.has_piece():
+                piece = square.piece  
+
+                img = pygame.image.load(piece.texture)
+
+                img_center = (
+                    col * SQUARE_SIZE + SQUARE_SIZE // 2,
+                    row * SQUARE_SIZE + SQUARE_SIZE // 2
+                )
+
+                piece.texture_rect = img.get_rect(center=img_center)
+                surface.blit(img, piece.texture_rect)
 
 
 
