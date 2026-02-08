@@ -25,16 +25,18 @@ class Game:
 
             if square.has_piece():
                 piece = square.piece  
+                if piece is not self.dragger.piece:
+                    piece.set_texture()
 
-                img = pygame.image.load(piece.texture)
+                    img = pygame.image.load(piece.texture)
 
-                img_center = (
-                    col * SQUARE_SIZE + SQUARE_SIZE // 2,
-                    row * SQUARE_SIZE + SQUARE_SIZE // 2
-                )
+                    img_center = (
+                        col * SQUARE_SIZE + SQUARE_SIZE // 2,
+                        row * SQUARE_SIZE + SQUARE_SIZE // 2
+                    )
 
-                piece.texture_rect = img.get_rect(center=img_center)
-                surface.blit(img, piece.texture_rect)
+                    piece.texture_rect = img.get_rect(center=img_center)
+                    surface.blit(img, piece.texture_rect)
 
 
 
