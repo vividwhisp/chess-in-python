@@ -1,14 +1,16 @@
 import os
+import pygame
 
 
 class Piece:
-    def __init__(self,name,color,value,texture=None,texture_rect=None):
+    def __init__(self,name,color,value,texture=None,texture_rect=None, image=None):
         self.name = name
         self.color = color
 
         value_sign = 1 if color == 'white' else -1
         self.value = value * value_sign
         self.texture = texture
+        self.image = image
         self.moves = []
         self.moved = False
         self.set_texture()
@@ -18,6 +20,8 @@ class Piece:
         self.texture = os.path.join(
             f'assets/images/imgs-{size}px/{self.color}_{self.name}.png'
         )
+        # cache image once per size
+        self.image = pygame.image.load(self.texture)
 
     def add_moves(self,move):
         self.moves.append(move)

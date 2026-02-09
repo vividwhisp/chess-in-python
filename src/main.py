@@ -8,7 +8,7 @@ class Main:
     
     def __init__(self):
         pygame.init()
-        self.screen = pygame.display.set_mode((WIDTH,HEIGHT))
+        self.screen = pygame.display.set_mode((WIDTH,HEIGHT),pygame.DOUBLEBUF)
         pygame.display.set_caption('CHESS GAME')
         self.game = Game()
 
@@ -22,6 +22,8 @@ class Main:
         while True: 
             game.showbg(screen)
             game.show_pieces(screen)
+            if dragger.dragging:
+                dragger.update_blit(screen)
         
             for event in pygame.event.get():
                     #Click
@@ -29,7 +31,7 @@ class Main:
                          dragger.update_mouse(event.pos)
 
                          clicked_row = dragger.mouseY // SQUARE_SIZE
-                         clicked_col = dragger.mouseY // SQUARE_SIZE
+                         clicked_col = dragger.mouseX // SQUARE_SIZE
 
 
 
@@ -43,14 +45,11 @@ class Main:
                     elif event.type == pygame.MOUSEMOTION:
                             if dragger.dragging:
                                 dragger.update_mouse(event.pos)
-                                game.showbg(screen)
-                                game.show_pieces(screen)
-                                dragger.update_blit(screen)
                     
                     elif event.type == pygame.MOUSEBUTTONUP:
                          dragger.undrag_piece()
 
-                    elif event == pygame.QUIT:
+                    elif event.type == pygame.QUIT:
                         pygame.quit()
                         sys.exit()
 

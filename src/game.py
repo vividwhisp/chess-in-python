@@ -26,9 +26,7 @@ class Game:
             if square.has_piece():
                 piece = square.piece  
                 if piece is not self.dragger.piece:
-                    piece.set_texture()
-
-                    img = pygame.image.load(piece.texture)
+                    img = piece.image
 
                     img_center = (
                         col * SQUARE_SIZE + SQUARE_SIZE // 2,
