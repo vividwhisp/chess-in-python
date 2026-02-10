@@ -7,6 +7,15 @@ class Game:
     def __init__(self):
         self.board = Board()
         self.dragger = Dragger()
+        self.sounds = {
+            "move": pygame.mixer.Sound("assets/sounds/move.wav"),
+            "capture": pygame.mixer.Sound("assets/sounds/capture.wav"),
+        }
+
+    def play_sound(self, name):
+        sound = self.sounds.get(name)
+        if sound:
+            sound.play()
 
     def showbg(self,surface):
         for row in range(ROWS):
