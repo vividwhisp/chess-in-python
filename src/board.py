@@ -5,6 +5,7 @@ from piece import *
 class Board:
     def __init__(self):
         self.squares = []
+        self.en_passant_square = None
 
         self._create()
         self._add_pieces('white')
@@ -75,10 +76,33 @@ class Board:
         if not self.is_valid_move(piece, start_row, start_col, target_row, target_col):
             return False, False
 
-        capture = target_square.has_piece()
+        is_en_passant = self._is_en_passant_capture(
+            piece, start_row, start_col, target_row, target_col
+        )
+        is_castling = piece.name == "king" and abs(target_col - start_col) == 2
+        capture = target_square.has_piece() or is_en_passant
+
+        if is_en_passant:
+            captured_row = start_row
+            captured_col = target_col
+            self.squares[captured_row][captured_col].piece = None
+
         target_square.piece = piece
         self.squares[start_row][start_col].piece = None
+
+        if is_castling:
+            self._move_castling_rook(start_row, start_col, target_col)
+
         piece.moved = True
+
+        if piece.name == "pawn" and abs(target_row - start_row) == 2:
+            self.en_passant_square = ((start_row + target_row) // 2, start_col)
+        else:
+            self.en_passant_square = None
+
+        if piece.name == "pawn":
+            self._promote_pawn_if_needed(target_row, target_col)
+
         return True, capture
 
     def is_valid_move(self, piece, start_row, start_col, target_row, target_col):
@@ -106,6 +130,10 @@ class Board:
             if abs(dc) == 1 and dr == direction:
                 if self.squares[target_row][target_col].has_piece():
                     return True
+                if self._is_en_passant_capture(
+                    piece, start_row, start_col, target_row, target_col
+                ):
+                    return True
 
             return False
 
@@ -115,6 +143,8 @@ class Board:
 
         # King
         if piece.name == 'king':
+            if abs(dc) == 2 and dr == 0:
+                return self._can_castle(piece, start_row, start_col, target_col)
             return max(abs(dr), abs(dc)) == 1
 
         # Rook
@@ -155,11 +185,72 @@ class Board:
 
         return True
 
+    def _is_en_passant_capture(self, piece, start_row, start_col, target_row, target_col):
+        if piece.name != "pawn":
+            return False
+        if self.en_passant_square is None:
+            return False
+        if (target_row, target_col) != self.en_passant_square:
+            return False
+        if abs(target_col - start_col) != 1:
+            return False
+        if target_row - start_row != piece.dir:
+            return False
+        adjacent_square = self.squares[start_row][target_col]
+        if not adjacent_square.has_piece():
+            return False
+        adjacent_piece = adjacent_square.piece
+        return adjacent_piece.name == "pawn" and adjacent_piece.color != piece.color
 
+    def _can_castle(self, king, row, start_col, target_col):
+        if king.moved:
+            return False
+        if target_col not in (2, 6):
+            return False
 
+        rook_col = 7 if target_col == 6 else 0
+        rook_square = self.squares[row][rook_col]
+        if not rook_square.has_piece():
+            return False
 
+        rook = rook_square.piece
+        if rook.name != "rook" or rook.color != king.color or rook.moved:
+            return False
 
-b = Board()
-b._create()
+        step = 1 if rook_col > start_col else -1
+        col = start_col + step
+        while col != rook_col:
+            if self.squares[row][col].has_piece():
+                return False
+            col += step
+
+        return True
+
+    def _move_castling_rook(self, row, start_col, target_col):
+        if target_col == 6:
+            rook_start_col = 7
+            rook_target_col = 5
+        else:
+            rook_start_col = 0
+            rook_target_col = 3
+
+        rook = self.squares[row][rook_start_col].piece
+        self.squares[row][rook_start_col].piece = None
+        self.squares[row][rook_target_col].piece = rook
+        if rook:
+            rook.moved = True
+
+    def _promote_pawn_if_needed(self, row, col):
+        square = self.squares[row][col]
+        if not square.has_piece():
+            return
+        piece = square.piece
+        if piece.name != "pawn":
+            return
+        if row not in (0, 7):
+            return
+        promoted_piece = Queen(piece.color)
+        promoted_piece.moved = True
+        square.piece = promoted_piece
 
 

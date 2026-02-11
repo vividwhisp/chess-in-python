@@ -7,6 +7,7 @@ class Game:
     def __init__(self):
         self.board = Board()
         self.dragger = Dragger()
+        self.current_turn = "white"
         self.sounds = {
             "move": pygame.mixer.Sound("assets/sounds/move.wav"),
             "capture": pygame.mixer.Sound("assets/sounds/capture.wav"),
@@ -16,6 +17,9 @@ class Game:
         sound = self.sounds.get(name)
         if sound:
             sound.play()
+
+    def next_turn(self):
+        self.current_turn = "black" if self.current_turn == "white" else "white"
 
     def showbg(self,surface):
         for row in range(ROWS):
