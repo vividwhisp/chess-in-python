@@ -28,6 +28,8 @@ class Main:
             for event in pygame.event.get():
                     #Click
                     if event.type == pygame.MOUSEBUTTONDOWN:
+                         if game.game_over:
+                            continue
                          dragger.update_mouse(event.pos)
 
                          clicked_row = dragger.mouseY // SQUARE_SIZE
@@ -61,6 +63,7 @@ class Main:
                              if moved:
                                  game.play_sound("capture" if captured else "move")
                                  game.next_turn()
+                                 game.update_status_after_move()
                              dragger.undrag_piece()
 
                     elif event.type == pygame.QUIT:

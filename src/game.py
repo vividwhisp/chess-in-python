@@ -8,6 +8,8 @@ class Game:
         self.board = Board()
         self.dragger = Dragger()
         self.current_turn = "white"
+        self.game_over = False
+        self.winner = None
         self.sounds = {
             "move": pygame.mixer.Sound("assets/sounds/move.wav"),
             "capture": pygame.mixer.Sound("assets/sounds/capture.wav"),
@@ -20,6 +22,15 @@ class Game:
 
     def next_turn(self):
         self.current_turn = "black" if self.current_turn == "white" else "white"
+
+    def update_status_after_move(self):
+        if self.board.is_checkmate(self.current_turn):
+            self.game_over = True
+            self.winner = "white" if self.current_turn == "black" else "black"
+            print(f"Checkmate! {self.winner} wins.")
+            return
+        if self.board.is_in_check(self.current_turn):
+            print(f"Check: {self.current_turn} king is under attack.")
 
     def showbg(self,surface):
         for row in range(ROWS):

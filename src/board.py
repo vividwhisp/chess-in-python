@@ -76,6 +76,11 @@ class Board:
         if not self.is_valid_move(piece, start_row, start_col, target_row, target_col):
             return False, False
 
+        if self._would_leave_king_in_check(
+            piece, start_row, start_col, target_row, target_col
+        ):
+            return False, False
+
         is_en_passant = self._is_en_passant_capture(
             piece, start_row, start_col, target_row, target_col
         )
@@ -185,6 +190,67 @@ class Board:
 
         return True
 
+    def is_in_check(self, color):
+        king_pos = self._find_king(color)
+        if not king_pos:
+            return False
+        enemy_color = "black" if color == "white" else "white"
+        return self.is_square_attacked(king_pos[0], king_pos[1], enemy_color)
+
+    def is_checkmate(self, color):
+        if not self.is_in_check(color):
+            return False
+        return not self.has_any_legal_move(color)
+
+    def has_any_legal_move(self, color):
+        for start_row in range(ROWS):
+            for start_col in range(COLS):
+                square = self.squares[start_row][start_col]
+                if not square.has_piece():
+                    continue
+
+                piece = square.piece
+                if piece.color != color:
+                    continue
+
+                for target_row in range(ROWS):
+                    for target_col in range(COLS):
+                        if start_row == target_row and start_col == target_col:
+                            continue
+
+                        target_square = self.squares[target_row][target_col]
+                        if (
+                            target_square.has_piece()
+                            and target_square.piece.color == color
+                        ):
+                            continue
+
+                        if not self.is_valid_move(
+                            piece, start_row, start_col, target_row, target_col
+                        ):
+                            continue
+
+                        if self._would_leave_king_in_check(
+                            piece, start_row, start_col, target_row, target_col
+                        ):
+                            continue
+
+                        return True
+        return False
+
+    def is_square_attacked(self, row, col, by_color):
+        for r in range(ROWS):
+            for c in range(COLS):
+                square = self.squares[r][c]
+                if not square.has_piece():
+                    continue
+                piece = square.piece
+                if piece.color != by_color:
+                    continue
+                if self._can_piece_attack_square(piece, r, c, row, col):
+                    return True
+        return False
+
     def _is_en_passant_capture(self, piece, start_row, start_col, target_row, target_col):
         if piece.name != "pawn":
             return False
@@ -224,6 +290,14 @@ class Board:
                 return False
             col += step
 
+        enemy_color = "black" if king.color == "white" else "white"
+        if self.is_square_attacked(row, start_col, enemy_color):
+            return False
+        if self.is_square_attacked(row, start_col + step, enemy_color):
+            return False
+        if self.is_square_attacked(row, target_col, enemy_color):
+            return False
+
         return True
 
     def _move_castling_rook(self, row, start_col, target_col):
@@ -252,5 +326,109 @@ class Board:
         promoted_piece = Queen(piece.color)
         promoted_piece.moved = True
         square.piece = promoted_piece
+
+    def _find_king(self, color):
+        for row in range(ROWS):
+            for col in range(COLS):
+                square = self.squares[row][col]
+                if not square.has_piece():
+                    continue
+                piece = square.piece
+                if piece.color == color and piece.name == "king":
+                    return row, col
+        return None
+
+    def _can_piece_attack_square(
+        self, piece, start_row, start_col, target_row, target_col
+    ):
+        dr = target_row - start_row
+        dc = target_col - start_col
+
+        if piece.name == "pawn":
+            return dr == piece.dir and abs(dc) == 1
+        if piece.name == "knight":
+            return (abs(dr), abs(dc)) in ((2, 1), (1, 2))
+        if piece.name == "king":
+            return max(abs(dr), abs(dc)) == 1
+        if piece.name == "rook":
+            return (dr == 0 or dc == 0) and self.is_path_clear(
+                start_row, start_col, target_row, target_col
+            )
+        if piece.name == "bishop":
+            return abs(dr) == abs(dc) and self.is_path_clear(
+                start_row, start_col, target_row, target_col
+            )
+        if piece.name == "queen":
+            return (dr == 0 or dc == 0 or abs(dr) == abs(dc)) and self.is_path_clear(
+                start_row, start_col, target_row, target_col
+            )
+        return False
+
+    def _would_leave_king_in_check(
+        self, piece, start_row, start_col, target_row, target_col
+    ):
+        start_square = self.squares[start_row][start_col]
+        target_square = self.squares[target_row][target_col]
+
+        old_start_piece = start_square.piece
+        old_target_piece = target_square.piece
+        old_piece_moved = piece.moved
+        old_en_passant = self.en_passant_square
+
+        is_en_passant = self._is_en_passant_capture(
+            piece, start_row, start_col, target_row, target_col
+        )
+        captured_ep_square = None
+        captured_ep_piece = None
+
+        is_castling = piece.name == "king" and abs(target_col - start_col) == 2
+        rook_state = None
+
+        if is_en_passant:
+            captured_ep_square = self.squares[start_row][target_col]
+            captured_ep_piece = captured_ep_square.piece
+            captured_ep_square.piece = None
+
+        start_square.piece = None
+        target_square.piece = piece
+        piece.moved = True
+
+        if is_castling:
+            if target_col == 6:
+                rook_start_col, rook_target_col = 7, 5
+            else:
+                rook_start_col, rook_target_col = 0, 3
+            rook_start_square = self.squares[start_row][rook_start_col]
+            rook_target_square = self.squares[start_row][rook_target_col]
+            rook_piece = rook_start_square.piece
+            rook_state = (
+                rook_start_square,
+                rook_target_square,
+                rook_piece,
+                rook_piece.moved if rook_piece else None,
+            )
+            rook_start_square.piece = None
+            rook_target_square.piece = rook_piece
+            if rook_piece:
+                rook_piece.moved = True
+
+        in_check = self.is_in_check(piece.color)
+
+        if rook_state:
+            rook_start_square, rook_target_square, rook_piece, rook_moved = rook_state
+            rook_start_square.piece = rook_piece
+            rook_target_square.piece = None
+            if rook_piece:
+                rook_piece.moved = rook_moved
+
+        start_square.piece = old_start_piece
+        target_square.piece = old_target_piece
+        piece.moved = old_piece_moved
+        self.en_passant_square = old_en_passant
+
+        if is_en_passant and captured_ep_square is not None:
+            captured_ep_square.piece = captured_ep_piece
+
+        return in_check
 
 
