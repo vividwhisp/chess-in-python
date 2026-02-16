@@ -14,8 +14,15 @@ class Main:
         self.title_font = pygame.font.SysFont("arial", 46, bold=True)
         self.button_font = pygame.font.SysFont("arial", 30, bold=True)
         self.info_font = pygame.font.SysFont("arial", 24)
+        self.promotion_font = pygame.font.SysFont("arial", 28, bold=True)
         self.play_again_rect = pygame.Rect(WIDTH // 2 - 130, HEIGHT // 2 + 20, 260, 56)
         self.quit_rect = pygame.Rect(WIDTH // 2 - 130, HEIGHT // 2 + 90, 260, 56)
+        self.promotion_buttons = {
+            "queen": pygame.Rect(WIDTH // 2 - 180, HEIGHT // 2 - 10, 160, 54),
+            "rook": pygame.Rect(WIDTH // 2 + 20, HEIGHT // 2 - 10, 160, 54),
+            "bishop": pygame.Rect(WIDTH // 2 - 180, HEIGHT // 2 + 60, 160, 54),
+            "knight": pygame.Rect(WIDTH // 2 + 20, HEIGHT // 2 + 60, 160, 54),
+        }
 
     def draw_game_over_overlay(self):
         screen = self.screen
@@ -45,6 +52,26 @@ class Main:
         screen.blit(play_text, play_text.get_rect(center=self.play_again_rect.center))
         screen.blit(quit_text, quit_text.get_rect(center=self.quit_rect.center))
 
+    def draw_promotion_overlay(self):
+        screen = self.screen
+        overlay = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
+        overlay.fill((0, 0, 0, 120))
+        screen.blit(overlay, (0, 0))
+
+        panel_rect = pygame.Rect(WIDTH // 2 - 240, HEIGHT // 2 - 120, 480, 280)
+        pygame.draw.rect(screen, (246, 246, 246), panel_rect, border_radius=12)
+        pygame.draw.rect(screen, (35, 35, 35), panel_rect, width=2, border_radius=12)
+
+        title = self.title_font.render("Pawn Promotion", True, (20, 20, 20))
+        screen.blit(title, title.get_rect(center=(WIDTH // 2, HEIGHT // 2 - 70)))
+        info = self.info_font.render("Choose piece:", True, (60, 60, 60))
+        screen.blit(info, info.get_rect(center=(WIDTH // 2, HEIGHT // 2 - 35)))
+
+        for name, rect in self.promotion_buttons.items():
+            pygame.draw.rect(screen, (55, 110, 160), rect, border_radius=8)
+            label = self.promotion_font.render(name.capitalize(), True, (255, 255, 255))
+            screen.blit(label, label.get_rect(center=rect.center))
+
 
     def mainloop(self):
         game = self.game
@@ -57,12 +84,22 @@ class Main:
             game.show_pieces(screen)
             if dragger.dragging:
                 dragger.update_blit(screen)
+            if board.has_pending_promotion():
+                self.draw_promotion_overlay()
             if game.game_over:
                 self.draw_game_over_overlay()
         
             for event in pygame.event.get():
                     #Click
                     if event.type == pygame.MOUSEBUTTONDOWN:
+                         if board.has_pending_promotion():
+                            for name, rect in self.promotion_buttons.items():
+                                if rect.collidepoint(event.pos):
+                                    if board.promote_pawn(name):
+                                        game.next_turn()
+                                        game.update_status_after_move()
+                                    break
+                            continue
                          if game.game_over:
                             if self.play_again_rect.collidepoint(event.pos):
                                 game.reset()
@@ -102,8 +139,9 @@ class Main:
                              )
                              if moved:
                                  game.play_sound("capture" if captured else "move")
-                                 game.next_turn()
-                                 game.update_status_after_move()
+                                 if not board.has_pending_promotion():
+                                     game.next_turn()
+                                     game.update_status_after_move()
                              dragger.undrag_piece()
 
                     elif event.type == pygame.QUIT:

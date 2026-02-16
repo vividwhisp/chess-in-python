@@ -6,6 +6,7 @@ class Board:
     def __init__(self):
         self.squares = []
         self.en_passant_square = None
+        self.pending_promotion = None
 
         self._create()
         self._add_pieces('white')
@@ -105,8 +106,9 @@ class Board:
         else:
             self.en_passant_square = None
 
-        if piece.name == "pawn":
-            self._promote_pawn_if_needed(target_row, target_col)
+        self.pending_promotion = None
+        if piece.name == "pawn" and target_row in (0, 7):
+            self.pending_promotion = (target_row, target_col, piece.color)
 
         return True, capture
 
@@ -314,18 +316,34 @@ class Board:
         if rook:
             rook.moved = True
 
-    def _promote_pawn_if_needed(self, row, col):
+    def has_pending_promotion(self):
+        return self.pending_promotion is not None
+
+    def promote_pawn(self, piece_name):
+        if self.pending_promotion is None:
+            return False
+
+        row, col, color = self.pending_promotion
         square = self.squares[row][col]
-        if not square.has_piece():
-            return
-        piece = square.piece
-        if piece.name != "pawn":
-            return
-        if row not in (0, 7):
-            return
-        promoted_piece = Queen(piece.color)
+        if not square.has_piece() or square.piece.name != "pawn":
+            self.pending_promotion = None
+            return False
+
+        promotion_map = {
+            "queen": Queen,
+            "rook": Rook,
+            "bishop": Bishop,
+            "knight": Knight,
+        }
+        piece_class = promotion_map.get(piece_name.lower())
+        if piece_class is None:
+            return False
+
+        promoted_piece = piece_class(color)
         promoted_piece.moved = True
         square.piece = promoted_piece
+        self.pending_promotion = None
+        return True
 
     def _find_king(self, color):
         for row in range(ROWS):
