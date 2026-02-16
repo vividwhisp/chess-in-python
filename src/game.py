@@ -32,6 +32,13 @@ class Game:
         if self.board.is_in_check(self.current_turn):
             print(f"Check: {self.current_turn} king is under attack.")
 
+    def reset(self):
+        self.board = Board()
+        self.dragger = Dragger()
+        self.current_turn = "white"
+        self.game_over = False
+        self.winner = None
+
     def showbg(self,surface):
         for row in range(ROWS):
             for col in range(COLS):
