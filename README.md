@@ -7,14 +7,10 @@ Current implementation includes core rules, special moves, turn handling, check/
 - Drag-and-drop piece movement
 - Turn-based play (`white` then `black`)
 - Legal move validation for all pieces
-- Special moves:
-- Castling
-- En passant
-- Pawn promotion with UI choice (`Queen`, `Rook`, `Bishop`, `Knight`)
+- Special moves: castling, en passant
+- Pawn promotion with UI choice (`Queen`, `Rook`, `Bishop`, `Knight`) and piece icons
 - Check and checkmate detection
-- Checkmate overlay with:
-- `Play Again`
-- `Quit`
+- Checkmate overlay with `Play Again` and `Quit`
 - Move and capture sounds
 - Cached piece images for smoother dragging/rendering
 
@@ -22,9 +18,8 @@ Current implementation includes core rules, special moves, turn handling, check/
 - Left click on your piece to pick it up
 - Drag to a target square and release to move
 - On promotion, click the piece you want
-- On checkmate, click:
-- `Play Again` to reset the board
-- `Quit` to close the app
+- On checkmate, click `Play Again` to reset the board
+- On checkmate, click `Quit` to close the app
 
 ## Requirements
 - Python 3.10+
@@ -55,17 +50,13 @@ python src/main.py
 - Normal legal moves for pawn, rook, knight, bishop, queen, king
 - Castling with path and attack checks
 - En passant capture
-- Promotion flow with explicit piece selection
+- Promotion flow with explicit piece selection and icons
 - Self-check prevention (illegal if your king would remain in check)
 - Check and checkmate detection
 
 ## Known Limitations
 - Stalemate is not implemented yet
-- Draw rules are not implemented yet:
-- Threefold repetition
-- Fifty-move rule
-- Insufficient material
-- Promotion UI uses text buttons (no piece icons yet)
+- Draw rules are not implemented yet: threefold repetition, fifty-move rule, insufficient material
 
 ## Suggested Next Steps
 - Add stalemate and draw rule detection
