@@ -23,6 +23,12 @@ class Main:
             "bishop": pygame.Rect(WIDTH // 2 - 180, HEIGHT // 2 + 60, 160, 54),
             "knight": pygame.Rect(WIDTH // 2 + 20, HEIGHT // 2 + 60, 160, 54),
         }
+        self.promotion_icons = {}
+        for color in ("white", "black"):
+            for name in ("queen", "rook", "bishop", "knight"):
+                path = f"assets/images/imgs-80px/{color}_{name}.png"
+                icon = pygame.image.load(path)
+                self.promotion_icons[(color, name)] = pygame.transform.smoothscale(icon, (38, 38))
 
     def draw_game_over_overlay(self):
         screen = self.screen
@@ -54,6 +60,7 @@ class Main:
 
     def draw_promotion_overlay(self):
         screen = self.screen
+        board = self.game.board
         overlay = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
         overlay.fill((0, 0, 0, 120))
         screen.blit(overlay, (0, 0))
@@ -67,10 +74,15 @@ class Main:
         info = self.info_font.render("Choose piece:", True, (60, 60, 60))
         screen.blit(info, info.get_rect(center=(WIDTH // 2, HEIGHT // 2 - 35)))
 
+        promotion_color = board.pending_promotion[2] if board.pending_promotion else "white"
         for name, rect in self.promotion_buttons.items():
             pygame.draw.rect(screen, (55, 110, 160), rect, border_radius=8)
+            icon = self.promotion_icons[(promotion_color, name)]
+            icon_rect = icon.get_rect(midleft=(rect.left + 16, rect.centery))
             label = self.promotion_font.render(name.capitalize(), True, (255, 255, 255))
-            screen.blit(label, label.get_rect(center=rect.center))
+            label_rect = label.get_rect(center=(rect.centerx + 16, rect.centery))
+            screen.blit(icon, icon_rect)
+            screen.blit(label, label_rect)
 
 
     def mainloop(self):
