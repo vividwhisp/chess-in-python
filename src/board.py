@@ -204,6 +204,11 @@ class Board:
             return False
         return not self.has_any_legal_move(color)
 
+    def is_stalemate(self, color):
+        if self.is_in_check(color):
+            return False
+        return not self.has_any_legal_move(color)
+
     def has_any_legal_move(self, color):
         for start_row in range(ROWS):
             for start_col in range(COLS):

@@ -41,8 +41,8 @@ class Main:
         pygame.draw.rect(screen, (245, 245, 245), panel_rect, border_radius=12)
         pygame.draw.rect(screen, (35, 35, 35), panel_rect, width=2, border_radius=12)
 
-        winner_text = f"Checkmate! {game.winner.capitalize()} wins"
-        text_surface = self.title_font.render(winner_text, True, (20, 20, 20))
+        message = game.game_over_message or "Game Over"
+        text_surface = self.title_font.render(message, True, (20, 20, 20))
         text_rect = text_surface.get_rect(center=(WIDTH // 2, HEIGHT // 2 - 70))
         screen.blit(text_surface, text_rect)
 
