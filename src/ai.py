@@ -86,3 +86,46 @@ def evaluate(board,ai_color):
             if sq.has_piece():
                 score += sq.piece.value #white positive, Black Negative
     return score if ai_color == "white" else -score
+
+
+def minimax(board, depth, alpha, beta, maximizing, ai_color):
+    enemy = "black" if ai_color == "white" else "white"
+
+    if board.is_checkmate(ai_color):
+        return -10_000_000
+    if board.is_checkmate(enemy):
+        return 10_000_000
+    if board.is_stalemate(ai_color) or board.is_stalemate(enemy):
+        return 0
+    
+    if depth == 0:
+        return evaluate(board, ai_color)
+    
+    side = ai_color if maximizing else enemy
+
+    legal_moves = get_all_legal_moves(board, side)
+
+    if not legal_moves:
+        return evaluate(board, ai_color)
+    
+    if maximizing:
+        best = -10**9
+
+        for mv in legal_moves:
+            val = minimax(apply_move(board, mv), depth - 1,alpha, beta, False, ai_color)
+            best = max(best, val)
+            alpha = max(alpha, best)
+            if beta <= alpha:
+                break
+        return best
+    
+    else:
+        best = 10**9
+        for mv in legal_moves:
+            val = minimax(apply_move(board, mv), depth - 1, alpha, beta, True, ai_color)
+            best = min(best, val)
+            beta = min(beta, best)
+            if beta <= alpha:
+                break
+        return best
+    
