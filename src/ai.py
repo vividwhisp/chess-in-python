@@ -129,3 +129,19 @@ def minimax(board, depth, alpha, beta, maximizing, ai_color):
                 break
         return best
     
+def find_best_move(board, ai_color="black", depth=2):
+    legal_moves = get_all_legal_moves(board, ai_color)
+    if not legal_moves:
+        return None
+    
+    best_move = None
+    best_score = -10**9
+
+    for mv in legal_moves:
+        new_board = apply_move(board, mv)
+        score = minimax(new_board, depth - 1, -10**9, 10**9, False,ai_color)
+        if score > best_score:
+            best_score = score
+            best_move = mv
+        
+    return best_move
