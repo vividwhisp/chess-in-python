@@ -2,13 +2,14 @@ import pygame
 import sys
 from const import *
 from game import Game
+from ai import find_best_move
 
 
 class Main:
-    
+
     def __init__(self):
         pygame.init()
-        self.screen = pygame.display.set_mode((WIDTH,HEIGHT),pygame.DOUBLEBUF)
+        self.screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.DOUBLEBUF)
         pygame.display.set_caption('CHESS GAME')
         self.game = Game()
         self.title_font = pygame.font.SysFont("arial", 46, bold=True)
@@ -29,6 +30,9 @@ class Main:
                 path = f"assets/images/imgs-80px/{color}_{name}.png"
                 icon = pygame.image.load(path)
                 self.promotion_icons[(color, name)] = pygame.transform.smoothscale(icon, (38, 38))
+
+        self.ai_color = "black"
+        self.ai_depth = 2
 
     def draw_game_over_overlay(self):
         screen = self.screen
@@ -84,12 +88,11 @@ class Main:
             screen.blit(icon, icon_rect)
             screen.blit(label, label_rect)
 
-
     def mainloop(self):
         game = self.game
         screen = self.screen
 
-        while True: 
+        while True:
             dragger = game.dragger
             board = game.board
             game.showbg(screen)
@@ -100,72 +103,79 @@ class Main:
                 self.draw_promotion_overlay()
             if game.game_over:
                 self.draw_game_over_overlay()
-        
+
             for event in pygame.event.get():
-                    #Click
-                    if event.type == pygame.MOUSEBUTTONDOWN:
-                         if board.has_pending_promotion():
-                            for name, rect in self.promotion_buttons.items():
-                                if rect.collidepoint(event.pos):
-                                    if board.promote_pawn(name):
-                                        game.next_turn()
-                                        game.update_status_after_move()
-                                    break
-                            continue
-                         if game.game_over:
-                            if self.play_again_rect.collidepoint(event.pos):
-                                game.reset()
-                            elif self.quit_rect.collidepoint(event.pos):
-                                pygame.quit()
-                                sys.exit()
-                            continue
-                         dragger.update_mouse(event.pos)
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    if board.has_pending_promotion():
+                        for name, rect in self.promotion_buttons.items():
+                            if rect.collidepoint(event.pos):
+                                if board.promote_pawn(name):
+                                    game.next_turn()
+                                    game.update_status_after_move()
+                                break
+                        continue
 
-                         clicked_row = dragger.mouseY // SQUARE_SIZE
-                         clicked_col = dragger.mouseX // SQUARE_SIZE
+                    if game.game_over:
+                        if self.play_again_rect.collidepoint(event.pos):
+                            game.reset()
+                        elif self.quit_rect.collidepoint(event.pos):
+                            pygame.quit()
+                            sys.exit()
+                        continue
 
+                    dragger.update_mouse(event.pos)
+                    clicked_row = dragger.mouseY // SQUARE_SIZE
+                    clicked_col = dragger.mouseX // SQUARE_SIZE
 
+                    if board.squares[clicked_row][clicked_col].has_piece():
+                        piece = board.squares[clicked_row][clicked_col].piece
+                        if piece.color == game.current_turn:
+                            dragger.save_initial(event.pos)
+                            dragger.drag_piece(piece)
 
-                         if board.squares[clicked_row][clicked_col].has_piece():
-                            piece = board.squares[clicked_row][clicked_col].piece
-                            if piece.color == game.current_turn:
-                                dragger.save_initial(event.pos)
-                                dragger.drag_piece(piece)
+                elif event.type == pygame.MOUSEMOTION:
+                    if dragger.dragging:
+                        dragger.update_mouse(event.pos)
 
+                elif event.type == pygame.MOUSEBUTTONUP:
+                    if dragger.dragging:
+                        dragger.update_mouse(event.pos)
+                        released_row = dragger.mouseY // SQUARE_SIZE
+                        released_col = dragger.mouseX // SQUARE_SIZE
+                        moved, captured = board.try_move(
+                            dragger.initial_row,
+                            dragger.initial_col,
+                            released_row,
+                            released_col,
+                        )
+                        if moved:
+                            game.play_sound("capture" if captured else "move")
+                            if not board.has_pending_promotion():
+                                game.next_turn()
+                                game.update_status_after_move()
+                        dragger.undrag_piece()
 
-                    
-                    elif event.type == pygame.MOUSEMOTION:
-                            if dragger.dragging:
-                                dragger.update_mouse(event.pos)
-                    
-                    elif event.type == pygame.MOUSEBUTTONUP:
-                         if dragger.dragging:
-                             dragger.update_mouse(event.pos)
-                             released_row = dragger.mouseY // SQUARE_SIZE
-                             released_col = dragger.mouseX // SQUARE_SIZE
-                             moved, captured = board.try_move(
-                                 dragger.initial_row,
-                                 dragger.initial_col,
-                                 released_row,
-                                 released_col,
-                             )
-                             if moved:
-                                 game.play_sound("capture" if captured else "move")
-                                 if not board.has_pending_promotion():
-                                     game.next_turn()
-                                     game.update_status_after_move()
-                             dragger.undrag_piece()
+                elif event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
 
-                    elif event.type == pygame.QUIT:
-                        pygame.quit()
-                        sys.exit()
-
-
+            if (
+                not game.game_over
+                and not board.has_pending_promotion()
+                and game.current_turn == self.ai_color
+            ):
+                move = find_best_move(board, self.ai_color, self.ai_depth)
+                if move:
+                    moved, captured = board.try_move(*move)
+                    if moved:
+                        if board.has_pending_promotion():
+                            board.promote_pawn("queen")
+                        game.play_sound("capture" if captured else "move")
+                        game.next_turn()
+                        game.update_status_after_move()
 
             pygame.display.update()
 
-        
-        
-        
+
 main = Main()
-main.mainloop() 
+main.mainloop()
