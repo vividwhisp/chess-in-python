@@ -78,4 +78,11 @@ def apply_move(board,move):
         new_board.promote_pawn("queen")
     return new_board
     
-        
+def evaluate(board,ai_color):
+    score = 0.0
+    for r in range(8):
+        for c in range(8):
+            sq = board.squares[r][c]
+            if sq.has_piece():
+                score += sq.piece.value #white positive, Black Negative
+    return score if ai_color == "white" else -score
