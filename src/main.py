@@ -93,18 +93,9 @@ class Main:
         screen = self.screen
 
         while True:
-            dragger = game.dragger
-            board = game.board
-            game.showbg(screen)
-            game.show_pieces(screen)
-            if dragger.dragging:
-                dragger.update_blit(screen)
-            if board.has_pending_promotion():
-                self.draw_promotion_overlay()
-            if game.game_over:
-                self.draw_game_over_overlay()
-
             for event in pygame.event.get():
+                dragger = game.dragger
+                board = game.board
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     if board.has_pending_promotion():
                         for name, rect in self.promotion_buttons.items():
@@ -159,11 +150,24 @@ class Main:
                     pygame.quit()
                     sys.exit()
 
+            dragger = game.dragger
+            board = game.board
             if (
                 not game.game_over
                 and not board.has_pending_promotion()
                 and game.current_turn == self.ai_color
             ):
+                # Flush one frame before blocking AI search so released drag size resets visually.
+                game.showbg(screen)
+                game.show_pieces(screen)
+                if dragger.dragging:
+                    dragger.update_blit(screen)
+                if board.has_pending_promotion():
+                    self.draw_promotion_overlay()
+                if game.game_over:
+                    self.draw_game_over_overlay()
+                pygame.display.update()
+
                 move = find_best_move(board, self.ai_color, self.ai_depth)
                 if move:
                     moved, captured = board.try_move(*move)
@@ -173,6 +177,17 @@ class Main:
                         game.play_sound("capture" if captured else "move")
                         game.next_turn()
                         game.update_status_after_move()
+
+            dragger = game.dragger
+            board = game.board
+            game.showbg(screen)
+            game.show_pieces(screen)
+            if dragger.dragging:
+                dragger.update_blit(screen)
+            if board.has_pending_promotion():
+                self.draw_promotion_overlay()
+            if game.game_over:
+                self.draw_game_over_overlay()
 
             pygame.display.update()
 
