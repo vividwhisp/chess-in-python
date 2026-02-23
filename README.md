@@ -1,25 +1,35 @@
 # Chess in Python (Pygame)
 
-A desktop chess game built with Python and Pygame.  
-Current implementation includes core rules, special moves, turn handling, check/checkmate detection, promotion choice UI, and game-over actions.
+A desktop chess game built with Python and Pygame.
+The current implementation is **Human (White) vs AI (Black)**, with core chess rules, promotion UI, and game-over overlays.
 
 ## Features
 - Drag-and-drop piece movement
-- Turn-based play (`white` then `black`)
+- Turn-based play with automatic AI response
+- Minimax AI with alpha-beta pruning (`src/ai.py`)
 - Legal move validation for all pieces
-- Special moves: castling, en passant
+- Special moves: castling and en passant
 - Pawn promotion with UI choice (`Queen`, `Rook`, `Bishop`, `Knight`) and piece icons
-- Check and checkmate detection
-- Checkmate overlay with `Play Again` and `Quit`
+- Check, checkmate, and stalemate detection
+- Game-over overlay with `Play Again` and `Quit`
 - Move and capture sounds
-- Cached piece images for smoother dragging/rendering
+- Cached piece images for smoother rendering
+
+## Game Mode
+- You play as **White**
+- AI plays as **Black**
+- AI defaults to depth `2`
+
+To tweak AI settings, update these values in `src/main.py`:
+- `self.ai_color = "black"`
+- `self.ai_depth = 2`
 
 ## Controls
-- Left click on your piece to pick it up
+- Left click your piece to pick it up
 - Drag to a target square and release to move
 - On promotion, click the piece you want
-- On checkmate, click `Play Again` to reset the board
-- On checkmate, click `Quit` to close the app
+- On game over, click `Play Again` to reset
+- On game over, click `Quit` to close the app
 
 ## Requirements
 - Python 3.10+
@@ -37,30 +47,33 @@ python src/main.py
 ```
 
 ## Project Structure
-- `src/main.py`: Entry point, event loop, overlays (promotion/game-over), input handling
-- `src/game.py`: Game state, turn state, sound handling, reset/status updates
-- `src/board.py`: Board model, move legality, special rules, check/checkmate logic
+- `src/main.py`: Entry point, event loop, overlays, player input, AI turn handling
+- `src/game.py`: Game state, turn state, sound playback, reset/status updates
+- `src/board.py`: Board model, legality checks, special rules, check/checkmate/stalemate logic
+- `src/ai.py`: Move generation, board cloning, evaluation, minimax search
 - `src/piece.py`: Piece classes and texture/image setup
 - `src/dragger.py`: Drag behavior and dragged-piece rendering
-- `src/square.py`: Square container model
+- `src/square.py`: Square data model
 - `assets/images/`: Piece sprite assets
 - `assets/sounds/`: Move and capture audio assets
 
-## Current Rule Coverage
+## Rule Coverage
 - Normal legal moves for pawn, rook, knight, bishop, queen, king
 - Castling with path and attack checks
 - En passant capture
 - Promotion flow with explicit piece selection and icons
-- Self-check prevention (illegal if your king would remain in check)
-- Check and checkmate detection
+- Self-check prevention (illegal if your king remains in check)
+- Check, checkmate, and stalemate detection
 
 ## Known Limitations
-- Stalemate is not implemented yet
-- Draw rules are not implemented yet: threefold repetition, fifty-move rule, insufficient material
+- Draw rules beyond stalemate are not implemented yet:
+  - Threefold repetition
+  - Fifty-move rule
+  - Insufficient material
 
 ## Suggested Next Steps
-- Add stalemate and draw rule detection
+- Add draw-rule detection (threefold, fifty-move, insufficient material)
 - Add legal move highlighting for selected pieces
-- Show check/checkmate status in on-board HUD (not only console)
+- Show check/checkmate/stalemate status in an on-board HUD
 - Add move history and undo
-- Add tests for board logic and special move edge cases
+- Add tests for board logic and AI behavior
