@@ -63,13 +63,12 @@ python src/main.py
 - En passant capture
 - Promotion flow with explicit piece selection and icons
 - Self-check prevention (illegal if your king remains in check)
-- Check, checkmate, and stalemate detection
+- Check, checkmate, and stalemate detection and Insufficient Material Draw
 
 ## Known Limitations
 - Draw rules beyond stalemate are not implemented yet:
   - Threefold repetition
   - Fifty-move rule
-  - Insufficient material
 
 ## Suggested Next Steps
 - Add draw-rule detection (threefold, fifty-move, insufficient material)
