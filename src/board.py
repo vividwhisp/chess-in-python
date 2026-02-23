@@ -208,6 +208,58 @@ class Board:
         if self.is_in_check(color):
             return False
         return not self.has_any_legal_move(color)
+    
+    def is_insufficient_material(self):
+        def pieces_for(color):
+            pieces = []
+            bishops_square_colors = []
+            for row in range(ROWS):
+                for col in range(COLS):
+                    square = self.squares[row][col]
+                    if not square.has_piece():
+                        continue
+                    piece = square.piece
+                    if piece.color != color:
+                        continue
+                    if piece.name == "king":
+                        continue
+                    pieces.append(piece.name)
+                    if piece.name == "bishop":
+                        bishops_square_colors.append((row + col) % 2)
+            return pieces, bishops_square_colors
+
+        white_pieces, white_bishops = pieces_for("white")
+        black_pieces, black_bishops = pieces_for("black")
+
+        all_pieces = white_pieces + black_pieces
+        if any(name in ("pawn", "rook", "queen") for name in all_pieces):
+            return False
+
+        if not white_pieces and not black_pieces:
+            return True
+
+        if len(white_pieces) == 1 and not black_pieces:
+            return white_pieces[0] in ("bishop", "knight")
+        if len(black_pieces) == 1 and not white_pieces:
+            return black_pieces[0] in ("bishop", "knight")
+
+        if (
+            len(white_pieces) == 1
+            and len(black_pieces) == 1
+            and white_pieces[0] == "bishop"
+            and black_pieces[0] == "bishop"
+            and white_bishops
+            and black_bishops
+            and white_bishops[0] == black_bishops[0]
+        ):
+            return True
+
+        if not black_pieces and sorted(white_pieces) == ["knight", "knight"]:
+            return True
+        if not white_pieces and sorted(black_pieces) == ["knight", "knight"]:
+            return True
+
+        return False
 
     def has_any_legal_move(self, color):
         for start_row in range(ROWS):
@@ -453,5 +505,4 @@ class Board:
             captured_ep_square.piece = captured_ep_piece
 
         return in_check
-
 

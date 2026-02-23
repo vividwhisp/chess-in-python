@@ -37,6 +37,12 @@ class Game:
             self.game_over_message = "Stalemate! Draw"
             print(self.game_over_message)
             return
+        if self.board.is_insufficient_material():
+            self.game_over = True
+            self.winner = None
+            self.game_over_message = "Insufficient material! Draw"
+            print(self.game_over_message)
+            return
         if self.board.is_in_check(self.current_turn):
             print(f"Check: {self.current_turn} king is under attack.")
 
