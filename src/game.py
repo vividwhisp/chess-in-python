@@ -11,10 +11,12 @@ class Game:
         self.game_over = False
         self.winner = None
         self.game_over_message = ""
+        self.position_counts = {}
         self.sounds = {
             "move": pygame.mixer.Sound("assets/sounds/move.wav"),
             "capture": pygame.mixer.Sound("assets/sounds/capture.wav"),
         }
+        self._record_current_position()
 
     def play_sound(self, name):
         sound = self.sounds.get(name)
@@ -43,6 +45,12 @@ class Game:
             self.game_over_message = "Insufficient material! Draw"
             print(self.game_over_message)
             return
+        if self._record_current_position() >= 3:
+            self.game_over = True
+            self.winner = None
+            self.game_over_message = "Threefold repetition! Draw"
+            print(self.game_over_message)
+            return
         if self.board.is_in_check(self.current_turn):
             print(f"Check: {self.current_turn} king is under attack.")
 
@@ -53,6 +61,14 @@ class Game:
         self.game_over = False
         self.winner = None
         self.game_over_message = ""
+        self.position_counts = {}
+        self._record_current_position()
+
+    def _record_current_position(self):
+        key = self.board.get_position_key(self.current_turn)
+        new_count = self.position_counts.get(key, 0) + 1
+        self.position_counts[key] = new_count
+        return new_count
 
     def showbg(self,surface):
         for row in range(ROWS):

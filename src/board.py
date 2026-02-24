@@ -208,6 +208,32 @@ class Board:
         if self.is_in_check(color):
             return False
         return not self.has_any_legal_move(color)
+
+    def get_position_key(self, side_to_move):
+        board_rows = []
+        for row in range(ROWS):
+            row_cells = []
+            for col in range(COLS):
+                square = self.squares[row][col]
+                if not square.has_piece():
+                    row_cells.append(".")
+                    continue
+                piece = square.piece
+                symbol_map = {
+                    "pawn": "p",
+                    "knight": "n",
+                    "bishop": "b",
+                    "rook": "r",
+                    "queen": "q",
+                    "king": "k",
+                }
+                symbol = symbol_map[piece.name]
+                row_cells.append(symbol.upper() if piece.color == "white" else symbol)
+            board_rows.append("".join(row_cells))
+
+        castling = self._get_castling_rights()
+        en_passant = self._get_en_passant_key(side_to_move)
+        return "|".join(board_rows) + f" {side_to_move} {castling} {en_passant}"
     
     def is_insufficient_material(self):
         def pieces_for(color):
@@ -309,6 +335,50 @@ class Board:
                 if self._can_piece_attack_square(piece, r, c, row, col):
                     return True
         return False
+
+    def _get_castling_rights(self):
+        rights = []
+
+        white_king = self.squares[7][4].piece
+        if white_king and white_king.name == "king" and white_king.color == "white" and not white_king.moved:
+            rook = self.squares[7][7].piece
+            if rook and rook.name == "rook" and rook.color == "white" and not rook.moved:
+                rights.append("K")
+            rook = self.squares[7][0].piece
+            if rook and rook.name == "rook" and rook.color == "white" and not rook.moved:
+                rights.append("Q")
+
+        black_king = self.squares[0][4].piece
+        if black_king and black_king.name == "king" and black_king.color == "black" and not black_king.moved:
+            rook = self.squares[0][7].piece
+            if rook and rook.name == "rook" and rook.color == "black" and not rook.moved:
+                rights.append("k")
+            rook = self.squares[0][0].piece
+            if rook and rook.name == "rook" and rook.color == "black" and not rook.moved:
+                rights.append("q")
+
+        return "".join(rights) if rights else "-"
+
+    def _get_en_passant_key(self, side_to_move):
+        if self.en_passant_square is None:
+            return "-"
+
+        row, col = self.en_passant_square
+        pawn_row = row - 1 if side_to_move == "white" else row + 1
+        if pawn_row < 0 or pawn_row >= ROWS:
+            return "-"
+
+        for pawn_col in (col - 1, col + 1):
+            if pawn_col < 0 or pawn_col >= COLS:
+                continue
+            square = self.squares[pawn_row][pawn_col]
+            if not square.has_piece():
+                continue
+            piece = square.piece
+            if piece.name == "pawn" and piece.color == side_to_move:
+                return f"{row},{col}"
+
+        return "-"
 
     def _is_en_passant_capture(self, piece, start_row, start_col, target_row, target_col):
         if piece.name != "pawn":
@@ -505,4 +575,3 @@ class Board:
             captured_ep_square.piece = captured_ep_piece
 
         return in_check
-
