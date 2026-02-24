@@ -10,7 +10,7 @@ The current implementation is **Human (White) vs AI (Black)**, with core chess r
 - Legal move validation for all pieces
 - Special moves: castling and en passant
 - Pawn promotion with UI choice (`Queen`, `Rook`, `Bishop`, `Knight`) and piece icons
-- Check, checkmate, and stalemate detection
+- Check, checkmate, and draw detection (stalemate, insufficient material, threefold repetition)
 - Game-over overlay with `Play Again` and `Quit`
 - Move and capture sounds
 - Cached piece images for smoother rendering
@@ -49,7 +49,7 @@ python src/main.py
 ## Project Structure
 - `src/main.py`: Entry point, event loop, overlays, player input, AI turn handling
 - `src/game.py`: Game state, turn state, sound playback, reset/status updates
-- `src/board.py`: Board model, legality checks, special rules, check/checkmate/stalemate logic
+- `src/board.py`: Board model, legality checks, special rules, and draw/check state logic
 - `src/ai.py`: Move generation, board cloning, evaluation, minimax search
 - `src/piece.py`: Piece classes and texture/image setup
 - `src/dragger.py`: Drag behavior and dragged-piece rendering
@@ -63,16 +63,16 @@ python src/main.py
 - En passant capture
 - Promotion flow with explicit piece selection and icons
 - Self-check prevention (illegal if your king remains in check)
-- Check, checkmate, and stalemate detection and Insufficient Material Draw
+- Check and checkmate detection
+- Draw detection: stalemate, insufficient material, threefold repetition
 
 ## Known Limitations
-- Draw rules beyond stalemate are not implemented yet:
-  - Threefold repetition
+- Remaining draw rules not implemented:
   - Fifty-move rule
 
 ## Suggested Next Steps
-- Add draw-rule detection (threefold, fifty-move, insufficient material)
+- Add fifty-move rule detection
 - Add legal move highlighting for selected pieces
-- Show check/checkmate/stalemate status in an on-board HUD
+- Show check/checkmate/draw status in an on-board HUD
 - Add move history and undo
 - Add tests for board logic and AI behavior
