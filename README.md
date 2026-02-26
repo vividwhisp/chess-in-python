@@ -1,11 +1,12 @@
 # Chess in Python (Pygame)
 
 A desktop chess game built with Python and Pygame.
-The current implementation is **Human (White) vs AI (Black)**, with core chess rules, promotion UI, and game-over overlays.
+Supports both **PVP** and **Human (White) vs AI (Black)**, with core chess rules, promotion UI, and game-over overlays.
 
 ## Features
 - Drag-and-drop piece movement
-- Turn-based play with automatic AI response
+- Two game modes: `PVP` and `vs AI`
+- Turn-based play with automatic AI response in `vs AI` mode
 - Minimax AI with alpha-beta pruning (`src/ai.py`)
 - Legal move validation for all pieces
 - Special moves: castling and en passant
@@ -16,17 +17,20 @@ The current implementation is **Human (White) vs AI (Black)**, with core chess r
 - Cached piece images for smoother rendering
 
 ## Game Mode
-- You play as **White**
-- AI plays as **Black**
-- AI defaults to depth `2`
+- `vs AI`: you play as **White**, AI plays as **Black** (default depth `2`)
+- `PVP`: White and Black are both controlled by players on the same device
+
+Switch mode any time by pressing `M` (the board resets on mode change).
 
 To tweak AI settings, update these values in `src/main.py`:
+- `self.game_mode = "ai"` (default startup mode)
 - `self.ai_color = "black"`
 - `self.ai_depth = 2`
 
 ## Controls
 - Left click your piece to pick it up
 - Drag to a target square and release to move
+- Press `M` to toggle between `PVP` and `vs AI` (resets game)
 - On promotion, click the piece you want
 - On game over, click `Play Again` to reset
 - On game over, click `Quit` to close the app
