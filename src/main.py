@@ -16,6 +16,7 @@ class Main:
         self.button_font = pygame.font.SysFont("arial", 30, bold=True)
         self.info_font = pygame.font.SysFont("arial", 24)
         self.promotion_font = pygame.font.SysFont("arial", 28, bold=True)
+        self.mode_font = pygame.font.SysFont("arial", 22, bold=True)
         self.play_again_rect = pygame.Rect(WIDTH // 2 - 130, HEIGHT // 2 + 20, 260, 56)
         self.quit_rect = pygame.Rect(WIDTH // 2 - 130, HEIGHT // 2 + 90, 260, 56)
         self.promotion_buttons = {
@@ -31,8 +32,14 @@ class Main:
                 icon = pygame.image.load(path)
                 self.promotion_icons[(color, name)] = pygame.transform.smoothscale(icon, (38, 38))
 
+        self.game_mode = "ai"
         self.ai_color = "black"
+        self.human_color = "white"
         self.ai_depth = 2
+
+    def toggle_mode(self):
+        self.game_mode = "pvp" if self.game_mode == "ai" else "ai"
+        self.game.reset()
 
     def draw_game_over_overlay(self):
         screen = self.screen
@@ -88,6 +95,17 @@ class Main:
             screen.blit(icon, icon_rect)
             screen.blit(label, label_rect)
 
+    def draw_mode_banner(self):
+        if self.game_mode == "pvp":
+            mode_text = "Mode: PVP (press M to switch)"
+        else:
+            mode_text = "Mode: vs AI (press M to switch)"
+        label = self.mode_font.render(mode_text, True, (20, 20, 20))
+        bg_rect = pygame.Rect(10, 10, label.get_width() + 16, label.get_height() + 10)
+        pygame.draw.rect(self.screen, (245, 245, 245), bg_rect, border_radius=6)
+        pygame.draw.rect(self.screen, (35, 35, 35), bg_rect, width=1, border_radius=6)
+        self.screen.blit(label, (18, 15))
+
     def mainloop(self):
         game = self.game
         screen = self.screen
@@ -120,7 +138,11 @@ class Main:
 
                     if board.squares[clicked_row][clicked_col].has_piece():
                         piece = board.squares[clicked_row][clicked_col].piece
-                        if piece.color == game.current_turn:
+                        can_control_piece = (
+                            self.game_mode == "pvp"
+                            or piece.color == self.human_color
+                        )
+                        if piece.color == game.current_turn and can_control_piece:
                             dragger.save_initial(event.pos)
                             dragger.drag_piece(piece)
 
@@ -146,6 +168,10 @@ class Main:
                                 game.update_status_after_move()
                         dragger.undrag_piece()
 
+                elif event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_m:
+                        self.toggle_mode()
+
                 elif event.type == pygame.QUIT:
                     pygame.quit()
                     sys.exit()
@@ -153,6 +179,8 @@ class Main:
             dragger = game.dragger
             board = game.board
             if (
+                self.game_mode == "ai"
+                and
                 not game.game_over
                 and not board.has_pending_promotion()
                 and game.current_turn == self.ai_color
@@ -188,6 +216,7 @@ class Main:
                 self.draw_promotion_overlay()
             if game.game_over:
                 self.draw_game_over_overlay()
+            self.draw_mode_banner()
 
             pygame.display.update()
 
