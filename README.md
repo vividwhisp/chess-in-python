@@ -1,45 +1,28 @@
 # Chess in Python (Pygame)
 
-A desktop chess game built with Python and Pygame.
-Supports both **PVP** and **Human (White) vs AI (Black)**, with core chess rules, promotion UI, and game-over overlays.
+A desktop chess game built with Python and Pygame. Play locally in two-player mode or against a basic AI. The game enforces legal moves, handles special rules, and includes UI feedback for game states.
 
-## Features
-- Drag-and-drop piece movement
-- Two game modes: `PVP` and `vs AI`
-- Turn-based play with automatic AI response in `vs AI` mode
-- Minimax AI with alpha-beta pruning (`src/ai.py`)
-- Legal move validation for all pieces
+## Highlights
+- Two modes: `PVP` (two players, one machine) and `vs AI` (Human as White vs AI as Black)
+- Drag-and-drop movement with full legality checks
 - Special moves: castling and en passant
-- Pawn promotion with UI choice (`Queen`, `Rook`, `Bishop`, `Knight`) and piece icons
-- Check, checkmate, and draw detection (stalemate, insufficient material, threefold repetition)
+- Promotion UI with selectable piece (`Queen`, `Rook`, `Bishop`, `Knight`)
+- Check, checkmate, and draw detection
+- Move/capture sound effects
 - Game-over overlay with `Play Again` and `Quit`
-- Move and capture sounds
-- Cached piece images for smoother rendering
-
-## Game Mode
-- `vs AI`: you play as **White**, AI plays as **Black** (default depth `2`)
-- `PVP`: White and Black are both controlled by players on the same device
-
-Switch mode any time by pressing `M` (the board resets on mode change).
-
-To tweak AI settings, update these values in `src/main.py`:
-- `self.game_mode = "ai"` (default startup mode)
-- `self.ai_color = "black"`
-- `self.ai_depth = 2`
+- On-screen mode banner and quick toggle
 
 ## Controls
-- Left click your piece to pick it up
-- Drag to a target square and release to move
-- Press `M` to toggle between `PVP` and `vs AI` (resets game)
-- On promotion, click the piece you want
-- On game over, click `Play Again` to reset
-- On game over, click `Quit` to close the app
+- Left click and drag a piece to move
+- Press `M` to toggle between `PVP` and `vs AI` (this resets the game)
+- On promotion, click the piece to promote into
+- On game over, click `Play Again` to reset or `Quit` to exit
 
 ## Requirements
 - Python 3.10+
-- Pygame
+- `pygame`
 
-## Setup
+## Installation
 ```bash
 pip install pygame
 ```
@@ -50,33 +33,48 @@ From the project root:
 python src/main.py
 ```
 
+## AI Configuration
+Defaults in `src/main.py`:
+- `self.game_mode = "ai"`
+- `self.ai_color = "black"`
+- `self.human_color = "white"`
+- `self.ai_depth = 2`
+
+Increase `self.ai_depth` for stronger but slower AI.
+
 ## Project Structure
-- `src/main.py`: Entry point, event loop, overlays, player input, AI turn handling
-- `src/game.py`: Game state, turn state, sound playback, reset/status updates
-- `src/board.py`: Board model, legality checks, special rules, and draw/check state logic
-- `src/ai.py`: Move generation, board cloning, evaluation, minimax search
-- `src/piece.py`: Piece classes and texture/image setup
-- `src/dragger.py`: Drag behavior and dragged-piece rendering
-- `src/square.py`: Square data model
-- `assets/images/`: Piece sprite assets
-- `assets/sounds/`: Move and capture audio assets
+- `src/main.py`: app entry point, event loop, overlays, mode switching, AI turn execution
+- `src/game.py`: game/session state, sounds, draw/checkmate status updates
+- `src/board.py`: board model, move legality, special rules, draw/check helpers
+- `src/ai.py`: minimax + alpha-beta pruning and board evaluation
+- `src/piece.py`: piece classes and texture loading
+- `src/dragger.py`: drag interaction handling
+- `src/square.py`: square model
+- `assets/images/`: piece sprites
+- `assets/sounds/`: move/capture audio
 
 ## Rule Coverage
-- Normal legal moves for pawn, rook, knight, bishop, queen, king
-- Castling with path and attack checks
-- En passant capture
-- Promotion flow with explicit piece selection and icons
-- Self-check prevention (illegal if your king remains in check)
-- Check and checkmate detection
-- Draw detection: stalemate, insufficient material, threefold repetition
+Implemented:
+- Standard movement rules for all pieces
+- Self-check prevention
+- Castling
+- En passant
+- Promotion with choice UI
+- Check/checkmate
+- Stalemate
+- Insufficient material
+- Threefold repetition
 
-## Known Limitations
-- Remaining draw rules not implemented:
-  - Fifty-move rule
+Not implemented yet:
+- Fifty-move rule
 
-## Suggested Next Steps
+## Tips and Notes
+- Mode toggle (`M`) resets the game state.
+- AI currently plays Black by default.
+- If audio is not available, verify your system audio device and `assets/sounds/` files.
+
+## Next Improvements
 - Add fifty-move rule detection
-- Add legal move highlighting for selected pieces
-- Show check/checkmate/draw status in an on-board HUD
+- Add legal-move highlighting for selected pieces
 - Add move history and undo
-- Add tests for board logic and AI behavior
+- Add tests for board logic and AI search behavior
