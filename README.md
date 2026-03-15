@@ -78,3 +78,4 @@ Not implemented yet:
 - Add legal-move highlighting for selected pieces
 - Add move history and undo
 - Add tests for board logic and AI search behavior
+- a Full fledge game
