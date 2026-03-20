@@ -79,3 +79,4 @@ Not implemented yet:
 - Add move history and undo
 - Add tests for board logic and AI search behavior
 - a Full fledge game
+- Will add more featuresin ai in future

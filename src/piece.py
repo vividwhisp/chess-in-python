@@ -1,5 +1,5 @@
 import os
-import pygame
+import pyga
 
 
 class Piece:
