@@ -80,3 +80,4 @@ Not implemented yet:
 - Add tests for board logic and AI search behavior
 - a Full fledge game
 - Will add more featuresin ai in future
+- Will have more bots and an llm too in the future.
